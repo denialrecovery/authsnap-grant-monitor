@@ -1,16 +1,24 @@
-name: Weekly Grant Scan
+name: Weekly Grant Reminder
 
 on:
   schedule:
-    - cron: '0 9 * * 1'  # Every Monday at 9am UTC
-  workflow_dispatch:       # Also allows manual trigger
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
 
 jobs:
-  scan:
+  remind:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Weekly Reminder
+      - name: Weekly Grant Monitor Reminder
         run: |
-          echo "Grant Monitor weekly scan triggered"
-          echo "Visit your grant monitor to run a fresh scan:"
+          echo "================================================"
+          echo "AUTHSNAP WEEKLY GRANT MONITOR REMINDER"
+          echo "================================================"
+          echo ""
+          echo "Time to check for new denial support grants!"
+          echo ""
+          echo "Open your grant monitor here:"
           echo "https://denialrecovery.github.io/authsnap-grant-monitor"
+          echo ""
+          echo "Click Run Scan to search for new opportunities."
+          echo "================================================"
