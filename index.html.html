@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Authsnap Grant Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface2:#21262d;
+  --border:#30363d;
+  --border2:#484f58;
+  --text:#e6edf3;
+  --text2:#8b949e;
+  --text3:#6e7681;
+  --accent:#1f6feb;
+  --accent2:#388bfd;
+  --green:#3fb950;
+  --amber:#d29922;
+  --red:#f85149;
+  --teal:#39d353;
+  --pill-r:#da3633;
+  --pill-a:#9e6a03;
+  --pill-g:#1a7f37;
+  --radius:8px;
+  --radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* LAYOUT */
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:0;display:flex;flex-direction:column}
+.main{display:flex;flex-direction:column;min-height:100vh}
+
+/* SIDEBAR */
+.logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.logo-mark{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text);letter-spacing:-0.5px}
+.logo-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;font-family:'DM Mono',monospace}
+.nav{padding:12px 8px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent);color:#fff}
+.nav-icon{font-size:14px;width:16px;text-align:center}
+.sidebar-footer{padding:12px 8px;border-top:1px solid var(--border)}
+.team-badge{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);background:var(--surface2)}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;font-family:'DM Mono',monospace}
+.team-text{font-size:12px;color:var(--text2)}
+.team-name{font-size:12px;color:var(--text);font-weight:500}
+
+/* HEADER */
+.topbar{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.page-title{font-size:16px;font-weight:600;color:var(--text)}
+.page-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text);transition:all .15s;font-family:'DM Sans',sans-serif}
+.btn:hover{border-color:var(--border2);background:var(--border)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#1a5fd1;border-color:#1a5fd1}
+.btn-green{background:#1a7f37;border-color:#238636;color:#fff}
+.btn-green:hover{background:#1d8f3d}
+
+/* CONTENT */
+.content{flex:1;padding:24px;overflow-y:auto}
+
+/* STATS ROW */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px}
+.stat-num{font-size:24px;font-weight:600;font-family:'DM Mono',monospace;color:var(--text)}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.stat-sub{font-size:12px;color:var(--text2);margin-top:2px}
+
+/* SEARCH BAR */
+.search-row{display:flex;gap:10px;margin-bottom:20px;align-items:center}
+.search-box{flex:1;position:relative}
+.search-box input{width:100%;padding:9px 12px 9px 36px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s}
+.search-box input:focus{border-color:var(--accent2)}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px}
+.filter-row{display:flex;gap:8px}
+select{padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+select:focus{border-color:var(--accent2)}
+
+/* GRANT CARDS */
+.grants-grid{display:flex;flex-direction:column;gap:10px}
+.grant-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;transition:border-color .15s;cursor:default}
+.grant-card:hover{border-color:var(--border2)}
+.grant-card.tier1{border-left:3px solid var(--accent2)}
+.grant-card.tier2{border-left:3px solid var(--amber)}
+.grant-card.tier3{border-left:3px solid var(--text3)}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.card-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.4}
+.card-funder{font-size:12px;color:var(--text2);margin-top:2px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:500;font-family:'DM Mono',monospace;letter-spacing:.3px}
+.badge-t1{background:rgba(56,139,253,.15);color:#79c0ff;border:1px solid rgba(56,139,253,.3)}
+.badge-t2{background:rgba(210,153,34,.15);color:#e3b341;border:1px solid rgba(210,153,34,.3)}
+.badge-t3{background:rgba(110,118,129,.15);color:#8b949e;border:1px solid rgba(110,118,129,.3)}
+.badge-urgent{background:rgba(248,81,73,.15);color:#ff7b72;border:1px solid rgba(248,81,73,.3)}
+.badge-open{background:rgba(63,185,80,.15);color:#56d364;border:1px solid rgba(63,185,80,.3)}
+.badge-watch{background:rgba(56,139,253,.1);color:#79c0ff;border:1px solid rgba(56,139,253,.2)}
+.badge-closed{background:rgba(110,118,129,.1);color:#6e7681;border:1px solid rgba(110,118,129,.2)}
+.card-body{font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px}
+.card-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.meta-item{background:var(--surface2);border-radius:var(--radius);padding:8px 10px}
+.meta-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-family:'DM Mono',monospace}
+.meta-val{font-size:12px;color:var(--text);margin-top:2px;font-weight:500}
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.apply-link{font-size:12px;color:var(--accent2);text-decoration:none;font-family:'DM Mono',monospace}
+.apply-link:hover{text-decoration:underline}
+.card-actions{display:flex;gap:6px}
+.icon-btn{padding:5px 10px;border-radius:var(--radius);border:1px solid var(--border);background:none;color:var(--text2);cursor:pointer;font-size:11px;transition:all .15s;font-family:'DM Mono',monospace}
+.icon-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.icon-btn.saved{color:var(--amber);border-color:rgba(210,153,34,.4)}
+
+/* AGENT PANEL */
+.agent-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:24px;overflow:hidden}
+.agent-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.agent-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.agent-dot.searching{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.agent-title{font-size:13px;font-weight:500;color:var(--text)}
+.agent-status{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-left:auto}
+.agent-log{padding:12px 20px;max-height:120px;overflow-y:auto;background:var(--bg)}
+.log-line{font-size:11px;color:var(--text2);padding:2px 0;display:flex;gap:8px;font-family:'DM Mono',monospace}
+.log-time{color:var(--text3);flex-shrink:0}
+.log-icon{flex-shrink:0}
+
+/* SCAN CONTROLS */
+.scan-bar{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.scan-select{padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:12px;font-family:'DM Mono',monospace;outline:none;cursor:pointer}
+.scan-input{flex:1;min-width:200px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:12px;font-family:'DM Mono',monospace;outline:none}
+.scan-input::placeholder{color:var(--text3)}
+.scan-input:focus{border-color:var(--accent2)}
+
+/* TEAM ACTIVITY */
+.activity-feed{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:24px}
+.activity-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--text)}
+.activity-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.activity-item:last-child{border-bottom:none}
+.activity-avatar{width:22px;height:22px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--text2);flex-shrink:0;font-family:'DM Mono',monospace}
+.activity-text{color:var(--text2);line-height:1.5}
+.activity-text strong{color:var(--text)}
+.activity-time{color:var(--text3);margin-left:auto;flex-shrink:0;font-family:'DM Mono',monospace;font-size:11px}
+
+/* TABS */
+.tabs{display:flex;gap:2px;padding:0 24px;border-bottom:1px solid var(--border);background:var(--surface)}
+.tab{padding:12px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--text);border-bottom-color:var(--accent2)}
+
+/* SPINNER */
+.spin{width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent2);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:32px;margin-bottom:12px}
+.empty-title{font-size:14px;color:var(--text2);margin-bottom:6px}
+.empty-sub{font-size:12px}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .card-meta{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">AUTHSNAP</div>
+    <div class="logo-sub">Grant Monitor</div>
+  </div>
+  <nav class="nav">
+    <button class="nav-item active" onclick="setView('monitor')">
+      <span class="nav-icon">◈</span> Live Monitor
+    </button>
+    <button class="nav-item" onclick="setView('saved')">
+      <span class="nav-icon">◇</span> Saved Grants
+    </button>
+    <button class="nav-item" onclick="setView('activity')">
+      <span class="nav-icon">◎</span> Team Activity
+    </button>
+    <button class="nav-item" onclick="setView('known')">
+      <span class="nav-icon">▦</span> Known Grants
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="team-badge">
+      <div class="avatar" id="userAvatar">?</div>
+      <div>
+        <div class="team-name" id="userName">Set Your Name</div>
+        <div class="team-text">Authsnap Team</div>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <input id="nameInput" placeholder="Your name..." style="width:100%;padding:6px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:12px;font-family:'DM Mono',monospace;outline:none" onchange="setName(this.value)"/>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="page-title" id="pageTitle">Live Grant Monitor</div>
+      <div class="page-sub" id="pageSub">AI agent scans the web for new denial support funding opportunities</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" onclick="clearResults()">Clear Results</button>
+      <button class="btn btn-primary" id="scanBtn" onclick="runScan()">▶ Run Scan</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabBar">
+    <div class="tab active" onclick="setTab('all')">All Grants</div>
+    <div class="tab" onclick="setTab('tier1')">Tier 1</div>
+    <div class="tab" onclick="setTab('tier2')">Tier 2</div>
+    <div class="tab" onclick="setTab('open')">Open Now</div>
+    <div class="tab" onclick="setTab('urgent')">Urgent</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="mainContent">
+
+    <!-- STATS -->
+    <div class="stats" id="statsRow">
+      <div class="stat">
+        <div class="stat-num" id="statTotal">—</div>
+        <div class="stat-label">Opportunities Found</div>
+        <div class="stat-sub">Latest scan</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statOpen" style="color:var(--green)">—</div>
+        <div class="stat-label">Open Now</div>
+        <div class="stat-sub">Active deadlines</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statUrgent" style="color:var(--red)">—</div>
+        <div class="stat-label">Urgent</div>
+        <div class="stat-sub">Due within 60 days</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="statSaved" style="color:var(--amber)">—</div>
+        <div class="stat-label">Team Saved</div>
+        <div class="stat-sub">Across all members</div>
+      </div>
+    </div>
+
+    <!-- AGENT PANEL -->
+    <div class="agent-panel" id="agentPanel">
+      <div class="agent-header">
+        <div class="agent-dot" id="agentDot"></div>
+        <div class="agent-title">Grant Scout Agent</div>
+        <div class="agent-status" id="agentStatus">Ready — click Run Scan to begin</div>
+      </div>
+      <div class="scan-bar">
+        <select class="scan-select" id="denialType">
+          <option value="all">All denial types</option>
+          <option value="insurance">Insurance / healthcare</option>
+          <option value="government">Government benefits</option>
+          <option value="grant">Grant denial support</option>
+        </select>
+        <select class="scan-select" id="oppType">
+          <option value="all">All opportunity types</option>
+          <option value="grant">Grants / RFPs</option>
+          <option value="job">Job postings</option>
+          <option value="contract">Contracts</option>
+        </select>
+        <select class="scan-select" id="fundingMin">
+          <option value="0">Any amount</option>
+          <option value="100000">$100K+</option>
+          <option value="500000">$500K+</option>
+          <option value="1000000">$1M+</option>
+        </select>
+        <input class="scan-input" id="keywords" placeholder="Keywords: prior auth, maternal health, SUD..."/>
+      </div>
+      <div class="agent-log" id="agentLog">
+        <div class="log-line"><span class="log-time">--:--</span><span class="log-icon">◈</span><span>Agent ready. Configure filters above and click Run Scan.</span></div>
+      </div>
+    </div>
+
+    <!-- SEARCH + FILTER -->
+    <div class="search-row" id="searchRow" style="display:none">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input type="text" placeholder="Search grants..." id="searchInput" oninput="filterGrants()"/>
+      </div>
+      <div class="filter-row">
+        <select onchange="filterGrants()" id="filterTier">
+          <option value="">All tiers</option>
+          <option value="tier1">Tier 1</option>
+          <option value="tier2">Tier 2</option>
+          <option value="tier3">Tier 3</option>
+        </select>
+        <select onchange="filterGrants()" id="filterStatus">
+          <option value="">All statuses</option>
+          <option value="open">Open</option>
+          <option value="urgent">Urgent</option>
+          <option value="watch">Watch</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- GRANTS LIST -->
+    <div class="grants-grid" id="grantsGrid">
+      <div class="empty">
+        <div class="empty-icon">◈</div>
+        <div class="empty-title">No results yet</div>
+        <div class="empty-sub">Run a scan to find grant opportunities</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const KNOWN_GRANTS = [
+  {id:'elevance-maternal',title:'Elevance Health Foundation — Maternal/Infant Health Grant',funder:'Elevance Health Foundation',tier:'tier1',amount:'~$1,000,000',deadline:'July 31, 2026',status:'open',denial_type:'insurance',description:'Funding for programs that improve maternal/infant health, target disparities, address social needs, and remove barriers to care throughout the pregnancy journey from pre-conception through postnatal care.',apply_url:'https://elevancehealth.foundation/for-grantseekers',contact:'foundation@elevancehealth.com',notes:'Portal opens June 2026. Download RFP first. Must save copy before submitting — cannot revise after.'},
+  {id:'elevance-behavioral',title:'Elevance Health Foundation — Behavioral Health Grant',funder:'Elevance Health Foundation',tier:'tier1',amount:'$250K–$5.4M',deadline:'Reopens 2027',status:'watch',denial_type:'insurance',description:'Five-year commitment to increasing MH/SUD treatment access, supporting prevention and early intervention, and reducing loneliness among individuals with behavioral health conditions.',apply_url:'https://elevancehealth.foundation/for-grantseekers',contact:'foundation@elevancehealth.com',notes:'Download RFP now to prepare. Apply when portal reopens in 2027.'},
+  {id:'elevance-cal',title:'Elevance CAL — $5M Patient Safety Prize',funder:'Elevance Health Foundation',tier:'tier1',amount:'$5,000,000 pool',deadline:'Watch for next round',status:'watch',denial_type:'all',description:'Open to for-profits AND nonprofits. Focus on transformational solutions improving patient safety, advancing quality of care, and enhancing outcomes for vulnerable populations.',apply_url:'https://elevancehealth.foundation',contact:'shelby.kaiser@elevancehealth.com',notes:'Inaugural round closed April 7, 2026. Monitor for next round announcement. AUTHSNAP CAN APPLY DIRECTLY.'},
+  {id:'rwjf-quality',title:'RWJF — Improving Healthcare Quality and Value',funder:'Robert Wood Johnson Foundation',tier:'tier2',amount:'$500K–$5M',deadline:'Rolling (new program 2026)',status:'watch',denial_type:'all',description:'Works collaboratively with providers, consumers, and policymakers to ensure everyone receives the right care at the right price. New health equity research program launching in 2026.',apply_url:'https://rwjf.org/en/grants/active-funding-opportunities.html',contact:'my.rwjf.org',notes:'Build relationship with program officer BEFORE applying. Strong preference for repeat grantees. Subscribe to RWJF Funding Alert.'},
+  {id:'bcbsm-community',title:'BCBS of Michigan Foundation — Community Health Matching Grant',funder:'Blue Cross Blue Shield of Michigan Foundation',tier:'tier2',amount:'Up to $25K/yr x 2 yrs',deadline:'Rolling — next board: Aug 5, 2026',status:'open',denial_type:'insurance',description:'Partners with Michigan nonprofit community organizations to develop population-led, community-inspired programs addressing health care access, quality, and cost.',apply_url:'https://www.bcbsm.com/foundation/grants/community-health/',contact:'foundation@bcbsm.com',notes:'Submit concept paper 60 days before board date. Only 20% of concept papers invited to full proposal. One concept paper per cycle.'},
+  {id:'bcbstx-blueimpact',title:'BCBS of Texas — Blue Impact Grants',funder:'Blue Cross and Blue Shield of Texas',tier:'tier2',amount:'$10K–$100K',deadline:'~January 2027 (2026-27 cycle closed)',status:'watch',denial_type:'all',description:'Supports sustainable, measurable programs targeting social determinants of health including maternal/infant health, behavioral health, and economic opportunity.',apply_url:'https://www.bcbstx.com/about-us/community-giving',contact:'Alicia Cooper — via bcbstx.com',notes:'2026-27 cycle closed Jan 30, 2026. Monitor starting Nov 2026 for 2027-28 cycle opening.'},
+  {id:'bcbsmt-blueimpact',title:'BCBS of Montana — Blue Impact Grants',funder:'Blue Cross and Blue Shield of Montana',tier:'tier2',amount:'Varies',deadline:'May 1, 2026',status:'urgent',denial_type:'all',description:'Targets social and economic factors affecting health and wellness in Montana communities including economic opportunity, food security, and access to essential care.',apply_url:'https://www.bcbsmt.com',contact:'Via bcbsmt.com contact form',notes:'DEADLINE MAY 1, 2026 — APPLY NOW. One-step application. Decisions by early June.'},
+  {id:'excellus-equity',title:'Excellus BCBS — Health Equity Innovation Award',funder:'Excellus BlueCross BlueShield',tier:'tier2',amount:'Varies',deadline:'March 6, 2026 (confirm 2027 cycle)',status:'watch',denial_type:'insurance',description:'Innovative initiatives reducing health disparities with potential for expansion. Must include clearly defined goals for reducing health disparities and improving health equity.',apply_url:'https://news.excellusbcbs.com/news-room/community-investments-partnerships',contact:'Via excellusbcbs.com',notes:'2026 deadline was March 6. Watch for 2027 cycle. Service area: upstate New York.'},
+  {id:'la-blue-innovation',title:'Louisiana Blue Foundation — Innovation Grants',funder:'Louisiana Blue Foundation',tier:'tier2',amount:'Varies',deadline:'Sep 1, 2026 (LOI)',status:'open',denial_type:'all',description:'Innovation grants for new projects to improve the health and wellbeing of Louisianians. Impact grants for expanding existing programs or addressing disaster/crisis needs.',apply_url:'https://labluefoundation.org/grants/',contact:'Foundation@lablue.com',notes:'Submit LOI by Sep 1, 2026. Check eligibility tool on site first. Full app only requested if LOI approved.'},
+  {id:'ahrq-patient-safety',title:'AHRQ — Patient Safety and Care Coordination Grants',funder:'Agency for Healthcare Research and Quality (AHRQ)',tier:'tier3',amount:'$300K–$3M',deadline:'Rolling (check ahrq.gov)',status:'open',denial_type:'all',description:'Funds applied research and implementation focused on reducing preventable harm, improving care coordination, and addressing workflow inefficiencies across care settings.',apply_url:'https://www.ahrq.gov/funding/fund-opps/index.html',contact:'GrantsManagementInbox@ahrq.hhs.gov',notes:'Submit via grants.gov + NIH eRA Commons. Register in SAM.gov and eRA Commons first (2-4 weeks). Monitor for proposed elimination in FY26 budget.'},
+  {id:'cmmi-models',title:'CMMI — Center for Medicare and Medicaid Innovation Models',funder:'Center for Medicare and Medicaid Innovation (CMS)',tier:'tier3',amount:'$100M+ per initiative',deadline:'By initiative announcement',status:'watch',denial_type:'all',description:'Tests new payment and service delivery models through cooperative agreements with health systems and provider groups. Not a traditional grant competition.',apply_url:'https://innovation.cms.gov',contact:'cmsinnovation@cms.hhs.gov',notes:'Partner with a health system already in a CMMI model. Authsnap serves as technology partner within the model. Monitor innovation.cms.gov for new model announcements.'},
+];
+
+let allGrants = [...KNOWN_GRANTS];
+let savedIds = new Set();
+let currentView = 'monitor';
+let currentTab = 'all';
+let logLines = [];
+let userName = 'You';
+let teamActivity = [];
+
+function ts(){const n=new Date();return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0')+':'+n.getSeconds().toString().padStart(2,'0')}
+
+function log(icon,msg){
+  logLines.push({t:ts(),icon,msg});
+  const el=document.getElementById('agentLog');
+  el.innerHTML=logLines.slice(-20).map(l=>`<div class="log-line"><span class="log-time">${l.t}</span><span class="log-icon">${l.icon}</span><span>${l.msg}</span></div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function setName(n){
+  if(!n.trim())return;
+  userName=n.trim();
+  document.getElementById('userName').textContent=userName;
+  document.getElementById('userAvatar').textContent=userName.substring(0,2).toUpperCase();
+}
+
+function statusBadge(s){
+  if(s==='urgent') return '<span class="badge badge-urgent">⚡ URGENT</span>';
+  if(s==='open')   return '<span class="badge badge-open">● OPEN</span>';
+  if(s==='watch')  return '<span class="badge badge-watch">◎ WATCH</span>';
+  if(s==='closed') return '<span class="badge badge-closed">✕ CLOSED</span>';
+  return '';
+}
+
+function tierBadge(t){
+  if(t==='tier1') return '<span class="badge badge-t1">TIER 1</span>';
+  if(t==='tier2') return '<span class="badge badge-t2">TIER 2</span>';
+  if(t==='tier3') return '<span class="badge badge-t3">TIER 3</span>';
+  return '';
+}
+
+function isSaved(id){return savedIds.has(id)}
+
+function toggleSave(id){
+  const grant = allGrants.find(g=>g.id===id);
+  if(!grant) return;
+  if(savedIds.has(id)){
+    savedIds.delete(id);
+    addActivity(userName,'removed',grant.title);
+  } else {
+    savedIds.add(id);
+    addActivity(userName,'saved',grant.title);
+  }
+  updateStats();
+  renderGrants(filterList());
+  if(currentView==='saved') renderSaved();
+}
+
+function addActivity(who, action, what){
+  teamActivity.unshift({who,action,what,time:ts()});
+  if(teamActivity.length>50) teamActivity.pop();
+}
+
+function updateStats(){
+  const grants = currentView==='saved' ? allGrants.filter(g=>savedIds.has(g.id)) : allGrants;
+  document.getElementById('statTotal').textContent=grants.length;
+  document.getElementById('statOpen').textContent=grants.filter(g=>g.status==='open'||g.status==='urgent').length;
+  document.getElementById('statUrgent').textContent=grants.filter(g=>g.status==='urgent').length;
+  document.getElementById('statSaved').textContent=savedIds.size;
+}
+
+function filterList(){
+  let list=[...allGrants];
+  const q=(document.getElementById('searchInput')||{}).value||'';
+  const tier=(document.getElementById('filterTier')||{}).value||'';
+  const status=(document.getElementById('filterStatus')||{}).value||'';
+  if(q) list=list.filter(g=>(g.title+g.funder+g.description+g.notes).toLowerCase().includes(q.toLowerCase()));
+  if(tier) list=list.filter(g=>g.tier===tier);
+  if(status) list=list.filter(g=>g.status===status);
+  if(currentTab==='tier1') list=list.filter(g=>g.tier==='tier1');
+  if(currentTab==='tier2') list=list.filter(g=>g.tier==='tier2');
+  if(currentTab==='open') list=list.filter(g=>g.status==='open');
+  if(currentTab==='urgent') list=list.filter(g=>g.status==='urgent');
+  return list;
+}
+
+function renderGrants(list){
+  const grid=document.getElementById('grantsGrid');
+  if(!list||list.length===0){
+    grid.innerHTML=`<div class="empty"><div class="empty-icon">◈</div><div class="empty-title">No grants found</div><div class="empty-sub">Try adjusting your filters or run a new scan</div></div>`;
+    return;
+  }
+  grid.innerHTML=list.map(g=>`
+    <div class="grant-card ${g.tier}" id="card-${g.id}">
+      <div class="card-top">
+        <div>
+          <div class="card-title">${g.title}</div>
+          <div class="card-funder">${g.funder}</div>
+        </div>
+        <div class="badges">
+          ${tierBadge(g.tier)}
+          ${statusBadge(g.status)}
+        </div>
+      </div>
+      <div class="card-body">${g.description}</div>
+      <div class="card-meta">
+        <div class="meta-item"><div class="meta-label">Amount</div><div class="meta-val">${g.amount}</div></div>
+        <div class="meta-item"><div class="meta-label">Deadline</div><div class="meta-val">${g.deadline}</div></div>
+        <div class="meta-item"><div class="meta-label">Contact</div><div class="meta-val" style="font-size:11px">${g.contact}</div></div>
+      </div>
+      ${g.notes?`<div style="font-size:11px;color:var(--amber);background:rgba(210,153,34,.08);border:1px solid rgba(210,153,34,.2);border-radius:var(--radius);padding:8px 10px;margin-bottom:10px;font-family:'DM Mono',monospace">ℹ ${g.notes}</div>`:''}
+      <div class="card-footer">
+        <a class="apply-link" href="${g.apply_url}" target="_blank">→ ${g.apply_url.replace('https://','').replace('http://','').split('/')[0]}</a>
+        <div class="card-actions">
+          <button class="icon-btn ${isSaved(g.id)?'saved':''}" onclick="toggleSave('${g.id}')">${isSaved(g.id)?'★ Saved':'☆ Save'}</button>
+          <button class="icon-btn" onclick="copyGrant('${g.id}')">⎘ Copy</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function copyGrant(id){
+  const g=allGrants.find(x=>x.id===id);
+  if(!g) return;
+  const text=`${g.title}\nFunder: ${g.funder}\nAmount: ${g.amount}\nDeadline: ${g.deadline}\nApply: ${g.apply_url}\nContact: ${g.contact}\n\n${g.description}`;
+  navigator.clipboard.writeText(text).catch(()=>{});
+  const btn=document.querySelector(`#card-${id} .icon-btn:last-child`);
+  if(btn){btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='⎘ Copy',1500)}
+}
+
+function filterGrants(){renderGrants(filterList())}
+
+function setTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const tabs=['all','tier1','tier2','open','urgent'];
+    t.classList.toggle('active',tabs[i]===tab);
+  });
+  renderGrants(filterList());
+}
+
+function setView(view){
+  currentView=view;
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const titles={monitor:'Live Grant Monitor',saved:'Saved Grants',activity:'Team Activity',known:'All Known Grants'};
+  const subs={monitor:'AI agent scans the web for new denial support funding opportunities',saved:'Grants your team has bookmarked',activity:'Recent team actions and notes',known:'Pre-loaded grant database for Authsnap'};
+  document.getElementById('pageTitle').textContent=titles[view];
+  document.getElementById('pageSub').textContent=subs[view];
+
+  const content=document.getElementById('mainContent');
+  if(view==='activity'){
+    renderActivity();
+  } else if(view==='saved'){
+    renderSaved();
+  } else {
+    renderMainView();
+  }
+  updateStats();
+}
+
+function renderMainView(){
+  document.getElementById('agentPanel').style.display='';
+  document.getElementById('searchRow').style.display='';
+  document.getElementById('statsRow').style.display='';
+  document.getElementById('tabBar').style.display='';
+  document.getElementById('scanBtn').style.display='';
+  renderGrants(filterList());
+}
+
+function renderSaved(){
+  const saved=allGrants.filter(g=>savedIds.has(g.id));
+  document.getElementById('agentPanel').style.display='none';
+  document.getElementById('searchRow').style.display='flex';
+  document.getElementById('statsRow').style.display='';
+  document.getElementById('tabBar').style.display='none';
+  document.getElementById('scanBtn').style.display='none';
+  renderGrants(saved);
+}
+
+function renderActivity(){
+  document.getElementById('agentPanel').style.display='none';
+  document.getElementById('searchRow').style.display='none';
+  document.getElementById('statsRow').style.display='none';
+  document.getElementById('tabBar').style.display='none';
+  document.getElementById('scanBtn').style.display='none';
+  const grid=document.getElementById('grantsGrid');
+  if(teamActivity.length===0){
+    grid.innerHTML=`<div class="empty"><div class="empty-icon">◎</div><div class="empty-title">No team activity yet</div><div class="empty-sub">Save grants and run scans to see activity here</div></div>`;
+    return;
+  }
+  const actionLabel={saved:'saved',removed:'removed','found new':'found new grant'};
+  grid.innerHTML=`<div class="activity-feed"><div class="activity-title">Recent Team Activity</div>${teamActivity.map(a=>`
+    <div class="activity-item">
+      <div class="activity-avatar">${a.who.substring(0,2).toUpperCase()}</div>
+      <div class="activity-text"><strong>${a.who}</strong> ${a.action} — ${a.what.substring(0,60)}${a.what.length>60?'...':''}</div>
+      <div class="activity-time">${a.time}</div>
+    </div>`).join('')}</div>`;
+}
+
+function clearResults(){
+  if(currentView!=='monitor') return;
+  allGrants=[...KNOWN_GRANTS];
+  logLines=[];
+  document.getElementById('agentLog').innerHTML=`<div class="log-line"><span class="log-time">--:--</span><span class="log-icon">◈</span><span>Cleared. Ready for new scan.</span></div>`;
+  document.getElementById('agentDot').classList.remove('searching');
+  document.getElementById('agentStatus').textContent='Ready — click Run Scan to begin';
+  renderGrants([]);
+  document.getElementById('searchRow').style.display='none';
+  updateStats();
+}
+
+async function runScan(){
+  const btn=document.getElementById('scanBtn');
+  const dot=document.getElementById('agentDot');
+  btn.disabled=true;
+  btn.textContent='◌ Scanning...';
+  dot.classList.add('searching');
+  logLines=[];
+  document.getElementById('agentStatus').textContent='Agent running...';
+  document.getElementById('searchRow').style.display='none';
+
+  const denialType=document.getElementById('denialType').value;
+  const oppType=document.getElementById('oppType').value;
+  const keywords=document.getElementById('keywords').value.trim();
+  const fundingMin=parseInt(document.getElementById('fundingMin').value)||0;
+
+  log('◈','Agent initialized — building search strategy');
+  log('⌕',`Scanning for: ${oppType==='all'?'grants, RFPs, contracts':oppType} in ${denialType==='all'?'all denial categories':denialType}`);
+  if(keywords) log('🏷','Keywords: '+keywords);
+
+  const systemPrompt=`You are a grant research agent specializing in finding funding opportunities for Authsnap, an AI-powered healthcare denial management company.
+
+Authsnap helps hospitals and health systems appeal denied insurance claims using clinical AI, achieving an 80% success rate vs. the 60-65% industry average. They work on medical necessity denials for Medicare, Medicaid, managed care, and commercial payors.
+
+Search for real, current grant opportunities, RFPs, and funding programs where:
+- Organizations provide denial support, patient advocacy, or insurance appeals assistance
+- Healthcare AI and revenue cycle innovation is funded
+- Maternal health, behavioral health, or patient safety programs need technology partners
+- Nonprofits doing benefits navigation or denial appeals need funding
+
+Return ONLY a valid JSON array. No markdown, no preamble. Each item must have:
+{
+  "id": "unique-slug",
+  "title": "Full grant name",
+  "funder": "Organization name",
+  "tier": "tier1" or "tier2" or "tier3",
+  "amount": "Dollar range",
+  "deadline": "Deadline text",
+  "status": "open" or "urgent" or "watch" or "closed",
+  "denial_type": "insurance" or "government" or "grant" or "all",
+  "description": "2-3 sentence description",
+  "apply_url": "Direct URL",
+  "contact": "Email or contact info",
+  "notes": "Key submission tip or warning"
+}
+
+Return 5-10 results. Focus on opportunities not already in the standard Elevance, BCBS, RWJF list — find NEW opportunities.`;
+
+  const userPrompt=`Search the web for NEW and CURRENT grant opportunities for denial support organizations or healthcare AI companies in April/May 2026.
+
+Filters:
+- Denial types: ${denialType==='all'?'insurance, government benefits, and grant denial support':denialType}
+- Opportunity types: ${oppType==='all'?'grants, RFPs, and contracts':oppType}
+- Minimum funding: ${fundingMin>0?'$'+fundingMin.toLocaleString():' no minimum'}
+${keywords?'- Keywords: '+keywords:''}
+
+Look specifically for:
+1. Any new foundation RFPs for patient advocacy, insurance appeals, or benefits navigation
+2. Government contracts or SBIR/STTR grants for healthcare AI denial management
+3. Hospital system RFPs for revenue cycle technology partners
+4. State health department grants for benefits counseling or denial support
+5. Any recently announced healthcare innovation prizes or competitions
+
+Return real, verifiable opportunities as a JSON array.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        system:systemPrompt,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:userPrompt}]
+      })
+    });
+
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'API error '+res.status)}
+    const data=await res.json();
+
+    const toolUses=data.content.filter(b=>b.type==='tool_use');
+    if(toolUses.length>0){
+      log('🌐',`Web search executed — ${toolUses.length} quer${toolUses.length>1?'ies':'y'}`);
+      toolUses.forEach(t=>{if(t.input?.query) log('⌕','Query: '+t.input.query)});
+    }
+
+    const fullText=data.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    let newGrants=[];
+    const match=fullText.match(/\[[\s\S]*\]/);
+    if(match) newGrants=JSON.parse(match[0]);
+    else newGrants=JSON.parse(fullText.replace(/```json|```/g,'').trim());
+
+    if(!Array.isArray(newGrants)) throw new Error('Unexpected format');
+
+    // Filter by funding minimum if set
+    if(fundingMin>0){
+      newGrants=newGrants.filter(g=>{
+        const nums=g.amount.replace(/[^0-9]/g,' ').trim().split(/\s+/).map(Number).filter(Boolean);
+        return nums.some(n=>n>=fundingMin);
+      });
+    }
+
+    // Merge — avoid duplicates by id
+    const existingIds=new Set(allGrants.map(g=>g.id));
+    const fresh=newGrants.filter(g=>!existingIds.has(g.id));
+    allGrants=[...allGrants,...fresh];
+
+    log('✅',`Found ${newGrants.length} opportunities (${fresh.length} new)`);
+    if(fresh.length>0) fresh.forEach(g=>addActivity(userName,'found new',g.title));
+
+    document.getElementById('agentStatus').textContent=`Last scan: ${ts()} — ${newGrants.length} found, ${fresh.length} new`;
+    document.getElementById('searchRow').style.display='flex';
+    updateStats();
+    renderGrants(filterList());
+
+  } catch(err){
+    log('✕','Agent error: '+err.message);
+    document.getElementById('agentStatus').textContent='Error — try again';
+    // Still show known grants
+    document.getElementById('searchRow').style.display='flex';
+    renderGrants(filterList());
+  }
+
+  dot.classList.remove('searching');
+  btn.disabled=false;
+  btn.textContent='▶ Run Scan';
+}
+
+// INIT
+function init(){
+  allGrants=[...KNOWN_GRANTS];
+  updateStats();
+  renderGrants([]);
+  document.getElementById('statTotal').textContent=KNOWN_GRANTS.length;
+  document.getElementById('statOpen').textContent=KNOWN_GRANTS.filter(g=>g.status==='open'||g.status==='urgent').length;
+  document.getElementById('statUrgent').textContent=KNOWN_GRANTS.filter(g=>g.status==='urgent').length;
+  document.getElementById('statSaved').textContent=0;
+  log('◈','Agent ready. '+KNOWN_GRANTS.length+' known grants pre-loaded.');
+  log('ℹ','Click "Known Grants" in sidebar to browse the pre-loaded database.');
+  log('▶','Click "Run Scan" to search the web for NEW opportunities.');
+  // Show known grants on first load
+  document.getElementById('searchRow').style.display='flex';
+  renderGrants(KNOWN_GRANTS);
+}
+
+init();
+</script>
+</body>
+</html>
