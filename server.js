@@ -5,7 +5,7 @@
 
 const http = require('http');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
