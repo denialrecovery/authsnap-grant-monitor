@@ -1,0 +1,27 @@
+name: Weekly Grant Scan
+
+on:
+  schedule:
+    - cron: '0 13 * * 1'   # Every Monday 9am ET (1pm UTC)
+  workflow_dispatch:         # Manual trigger from GitHub Actions tab
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Grant Scout Worker
+        run: |
+          echo "Triggering Authsnap weekly grant scan..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${{ secrets.WORKER_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{"category":"all","keywords":"","fundingMin":0,"existingIds":[]}')
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -1)
+          echo "HTTP Status: $HTTP_CODE"
+          COUNT=$(echo "$BODY" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("count","?"))' 2>/dev/null || echo "?")
+          echo "Grants found this scan: $COUNT"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERROR: Scan failed"
+            exit 1
+          fi
+          echo "Weekly scan completed successfully"
